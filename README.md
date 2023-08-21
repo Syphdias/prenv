@@ -93,6 +93,7 @@ with the following COMMANDS:
    
 ## Know Issues
 - Possibly this README and help command. Please give feedback!
+- Undefined behavior if activating the same project twice
 
 ## Feature Ideas
 - multi configurations: enable using multiple files

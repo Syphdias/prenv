@@ -3,7 +3,7 @@
 # modify the environment
 typeset -ga PRENV=()
 typeset -g PRENV_SCRIPT="$0"
-typeset -g VERSION=1.0.0
+typeset -g VERSION=1.0.1
 
 
 function prenv() {
@@ -167,7 +167,7 @@ function prenv-off() {
 
     elif [[ ${#PRENV[@]} -gt 0 ]]; then
         # off all projects
-        for project in $projects; do
+        for project in ${(@)PRENV}; do
             prenv-off "$project"
         done
 
