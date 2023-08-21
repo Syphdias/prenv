@@ -145,7 +145,7 @@ function prenv-on() {
     fi
 }
 
-function penv-off() {
+function prenv-off() {
     local project
     local projects=$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)
     if [[ -n "$1" ]]; then
@@ -168,7 +168,7 @@ function penv-off() {
     elif [[ ${#PRENV[@]} -gt 0 ]]; then
         # off all projects
         for project in $projects; do
-            penv-off "$project"
+            prenv-off "$project"
         done
 
     else
