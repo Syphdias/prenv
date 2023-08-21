@@ -1,4 +1,4 @@
-prompt_penv() {
-    [[ -n "${#PENV[@]}" ]] \
-        && p10k segment -f 197 -t "$PENV"
+prompt_prenv() {
+    [[ -n "${#PRENV[@]}" ]] \
+        && p10k segment -f 197 -t "$PRENV"
 }
