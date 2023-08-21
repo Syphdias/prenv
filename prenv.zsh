@@ -3,7 +3,7 @@
 # modify the environment
 typeset -ga PRENV=()
 typeset -g PRENV_SCRIPT="$0"
-typeset -g VERSION=1.0.1
+typeset -g VERSION=1.0.2
 
 
 function prenv() {
@@ -81,7 +81,7 @@ function prenv-list() {
 
         # show environment variables, if set (*) and if as in config (**)
         if [[ "$verbose" == "1" ]]; then
-            local project_envs=$(yq -r '.["'$project'"].env |keys |"  " + .[]' ~/.config/prenv.yaml)
+            local project_envs=$(yq -r '.["'$project'"].env // {} |keys |"  " + .[]' ~/.config/prenv.yaml)
             while read -u 4 project_env; do
                 if [[ $(yq -r '.["'$project'"].env["'$project_env'"]' ~/.config/prenv.yaml) == "${(P)project_env}" ]]; then
                     # variable as in config
