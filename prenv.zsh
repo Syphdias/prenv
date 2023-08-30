@@ -1,34 +1,34 @@
 # I need functions to manage my environment
 # this cannot be done in a program because it would fork and not be able to
 # modify the environment
-typeset -ga PRENV=()
-typeset -g PRENV_SCRIPT="$0"
-typeset -g VERSION=1.0.2
+typeset -ga _PRENV=()
+typeset -g _PRENV_SCRIPT="$0"
+typeset -g VERSION=1.0.3
 
 
 function prenv() {
     case "$1" in
         list)
             shift
-            prenv-list $*
+            _prenv-list $*
             ;;
         on)
             shift
-            prenv-on $*
+            _prenv-on $*
             ;;
         off)
             shift
-            prenv-off $*
+            _prenv-off $*
             ;;
-        show)  prenv-list -vf ;;
-        clear) prenv-clear ;;
+        show)  _prenv-list -vf ;;
+        clear) _prenv-clear ;;
         help|-h|--help)
-               prenv-help ;;
-        *)     prenv-help; return 1 ;;
+               _prenv-help ;;
+        *)     _prenv-help; return 1 ;;
     esac
 }
 
-function prenv-help() {
+function _prenv-help() {
     cat <<-EOF
 prenv [COMMAND] [OPTIONS]
 Version: $VERSION
@@ -56,7 +56,7 @@ EOF
 }
 
 
-function prenv-list() {
+function _prenv-list() {
     # set options
     local verbose=0
     local filter=0
@@ -70,7 +70,7 @@ function prenv-list() {
     local project env_project
     local projects=$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)
     while read -u 3 project; do
-        if [[ ${#PRENV[@]} -gt 0 && ${PRENV[(Ie)$project]} -gt 0 ]]; then
+        if [[ ${#_PRENV[@]} -gt 0 && ${_PRENV[(Ie)$project]} -gt 0 ]]; then
             sed "s/${project}/${project} */" <<<$project
         else
             if [[ "$filter" == "1" ]]; then
@@ -97,30 +97,30 @@ function prenv-list() {
         fi
     done 3<<<$projects
 
-    for project in ${(@)PRENV}; do
+    for project in ${(@)_PRENV}; do
         if [[ ${projects[(Ie)$project]} -eq 0 ]]; then
             echo "$project # not in config"
         fi
     done
 }
 
-function prenv-on() {
-    # remember PRENV in case it gets off
-    local _PRENV=(${(@)PRENV})
+function _prenv-on() {
+    # remember _PRENV in case it gets off
+    local _local_PRENV=(${(@)_PRENV})
     # deactivate old project(s) unless explicitly
     if [[ "$1" == "-p" ]]; then
         # skip deactivating projects
         shift
     else
-        for project in ${(@)PRENV}; do
+        for project in ${(@)_PRENV}; do
             prenv off "$project"
         done
     fi
 
     if [[ "$1" == "" ]]; then
         # reactivate current project(s)
-        # _PRENV in case PRENV was emptied by `prenv off`s (without -p)
-        for project in ${(@)_PRENV}; do
+        # _local_PRENV in case _PRENV was emptied by `prenv off`s (without -p)
+        for project in ${(@)_local_PRENV}; do
             prenv on -p "$project"
         done
         return
@@ -140,12 +140,12 @@ function prenv-on() {
     # trigger on hook
     eval "$(yq -r '.["'$1'"].hooks.on // ""' ~/.config/prenv.yaml)"
 
-    if [[ ${PRENV[(Ie)$1]} -eq 0 ]]; then
-        PRENV+=("$1")
+    if [[ ${_PRENV[(Ie)$1]} -eq 0 ]]; then
+        _PRENV+=("$1")
     fi
 }
 
-function prenv-off() {
+function _prenv-off() {
     local project
     local projects=$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)
     if [[ -n "$1" ]]; then
@@ -153,7 +153,7 @@ function prenv-off() {
         if [[ ${projects[(Ie)$project]} -eq 0 ]]; then
             echo "$project not in config"
             # trying to remove the project in case it is active
-            PRENV=(${(@)PRENV:#${1}})
+            _PRENV=(${(@)_PRENV:#${1}})
             return 1
         fi
 
@@ -163,12 +163,12 @@ function prenv-off() {
         # trigger off hook
         eval "$(yq -r '.["'$1'"].hooks.off // ""' ~/.config/prenv.yaml)"
 
-        PRENV=(${(@)PRENV:#${1}})
+        _PRENV=(${(@)_PRENV:#${1}})
 
-    elif [[ ${#PRENV[@]} -gt 0 ]]; then
+    elif [[ ${#_PRENV[@]} -gt 0 ]]; then
         # off all projects
-        for project in ${(@)PRENV}; do
-            prenv-off "$project"
+        for project in ${(@)_PRENV}; do
+            _prenv-off "$project"
         done
 
     else
@@ -177,7 +177,7 @@ function prenv-off() {
     fi
 }
 
-function prenv-clear() {
+function _prenv-clear() {
     local project
     # loop over all projects and unset all environments
     for project in $(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml); do
@@ -186,9 +186,9 @@ function prenv-clear() {
         # trigger clear hooks
         eval "$(yq -r '.["'$project'"].hooks.clear // ""' ~/.config/prenv.yaml)"
 
-        PRENV=(${(@)PRENV:#${1}})
+        _PRENV=(${(@)_PRENV:#${1}})
     done
 
-    # clear PRENV in case the is a project that is not in the configuration
-    typeset -ga PRENV=()
+    # clear _PRENV in case the is a project that is not in the configuration
+    typeset -ga _PRENV=()
 }
