@@ -1,0 +1,47 @@
+#compdef _prenv prenv
+
+function _prenv() {
+    local -a subcmd
+    subcmds=(
+        'list:List projects in config'
+        'on:Activate project'
+        'off:Deactivate project'
+        'show:Show details about active project(s)'
+        'clear:Clear all projects'
+        'help:Show help'
+    )
+
+    local -a projects active_projects inactive_projects project
+    projects=($(yq -r 'keys |.[]' ~/.config/prenv.yaml))
+    # Remove active projects from all projects
+    active_projects=(${(@)_PRENV})
+    inactive_projects=(${(@)projects})
+    for project in ${(@)active_projects}; do
+        inactive_projects=(${(@)inactive_projects:#${project}})
+    done
+
+    _arguments -C \
+        '1: :{_describe commands subcmds}' \
+        '*::arg:_prenv_subcommand'
+}
+
+function _prenv_subcommand() {
+    case $line[1] in
+        list)
+            _arguments \
+                '-v[Show environement variables]' \
+                '-f[Filter for active projects]'
+            ;;
+        on)
+            # FIXME: -p only as second argument
+            _arguments \
+                ': :($inactive_projects)' \
+                '-p[Preserve active projects]'
+        ;;
+        off)
+            _arguments ': :($active_projects)'
+        ;;
+    esac
+}
+
+compdef _prenv prenv

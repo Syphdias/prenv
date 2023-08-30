@@ -16,6 +16,7 @@ There is currently no classic installation/package. Clone the repo or download
 
 ```zsh
 source path/to/prenv.zsh
+source path/to/_prenv    # for autocomplate or copy into fpath dir
 ```
 
 If you are using [Powerlevel10k] you can also source `prenv-p10k-segment.zsh`
