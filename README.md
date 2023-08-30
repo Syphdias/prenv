@@ -95,12 +95,13 @@ with the following COMMANDS:
 ## Know Issues
 - Possibly this README and help command. Please give feedback!
 - Undefined behavior if activating the same project twice
+- Completion for `-p` is allowed in `prenv on` after the project. One could fix
+  the completion or how the flag(s) is(/are) parsed. PR welcome 😊
 
 ## Feature Ideas
 - multi configurations: enable using multiple files
     - files in fixed config dir?
     - include statement for more files?
-- zsh completion
 - AUR if anybody wants it
     - requires versioning, because I am not a fan of `-git` packages
 
