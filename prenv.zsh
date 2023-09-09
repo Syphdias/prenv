@@ -3,7 +3,7 @@
 # modify the environment
 typeset -ga _PRENV=()
 typeset -g _PRENV_SCRIPT="$0"
-typeset -g VERSION=1.0.3
+typeset -g VERSION=1.0.4
 
 
 function prenv() {
@@ -158,7 +158,11 @@ function _prenv-off() {
         fi
 
         # unset environment variables
-        unset $(yq -r '.["'$1'"].env // {} |keys |.[]' ~/.config/prenv.yaml  |xargs)
+        local env_keys
+        env_keys="$(yq -r '.["'$1'"].env // {} |keys |.[]' ~/.config/prenv.yaml)"
+        if [[ -n "$env_keys" ]]; then
+            unset $(xargs <<<"$env_keys")
+        fi
 
         # trigger off hook
         eval "$(yq -r '.["'$1'"].hooks.off // ""' ~/.config/prenv.yaml)"
@@ -181,7 +185,12 @@ function _prenv-clear() {
     local project
     # loop over all projects and unset all environments
     for project in $(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml); do
-        unset $(yq -r '.["'$project'"].env // {} |keys |.[]' ~/.config/prenv.yaml |xargs)
+        # unset environment variables
+        local env_keys
+        env_keys="$(yq -r '.["'$project'"].env // {} |keys |.[]' ~/.config/prenv.yaml)"
+        if [[ -n "$env_keys" ]]; then
+            unset $(xargs <<<"$env_keys")
+        fi
 
         # trigger clear hooks
         eval "$(yq -r '.["'$project'"].hooks.clear // ""' ~/.config/prenv.yaml)"
