@@ -3,7 +3,7 @@
 # modify the environment
 typeset -ga _PRENV=()
 typeset -g _PRENV_SCRIPT="$0"
-typeset -g VERSION=1.0.4
+typeset -g VERSION=1.1.0
 
 
 function prenv() {
@@ -68,8 +68,8 @@ function _prenv-list() {
     done
 
     local project env_project
-    local projects=$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)
-    while read -u 3 project; do
+    local -a projects=("${(@f)$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)}")
+    for project in ${(@)projects}; do
         if [[ ${#_PRENV[@]} -gt 0 && ${_PRENV[(Ie)$project]} -gt 0 ]]; then
             sed "s/${project}/${project} */" <<<$project
         else
@@ -95,7 +95,7 @@ function _prenv-list() {
                 fi
             done 4<<<$project_envs
         fi
-    done 3<<<$projects
+    done
 
     for project in ${(@)_PRENV}; do
         if [[ ${projects[(Ie)$project]} -eq 0 ]]; then
@@ -106,18 +106,21 @@ function _prenv-list() {
 
 function _prenv-on() {
     # remember _PRENV in case it gets off
-    local _local_PRENV=(${(@)_PRENV})
+    local -a _local_PRENV=(${(@)_PRENV})
     # deactivate old project(s) unless explicitly
     if [[ "$1" == "-p" ]]; then
         # skip deactivating projects
         shift
     else
-        for project in ${(@)_PRENV}; do
-            prenv off "$project"
-        done
+        # deactivate projects before activating them again
+        if [[ ${#_PRENV[@]} -gt 0 ]]; then
+            _prenv-off
+        fi
     fi
 
-    if [[ "$1" == "" ]]; then
+    local project on_project
+    on_project="${1}"
+    if [[ "${on_project}" == "" ]]; then
         # reactivate current project(s)
         # _local_PRENV in case _PRENV was emptied by `prenv off`s (without -p)
         for project in ${(@)_local_PRENV}; do
@@ -127,51 +130,61 @@ function _prenv-on() {
     fi
 
     # check if project if defined in configuration
-    if [[ ${(@)$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)[(Ie)$1]} -eq 0 ]]; then
-        echo "Project \"$1\" not in config file ~/.config/prenv.yaml" >&2
+    if [[ ${(@f)$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)[(Ie)${on_project}]} -eq 0 ]]; then
+        echo "Project \"${on_project}\" not in config file ~/.config/prenv.yaml" >&2
         return 1
     fi
 
     # set environment variables
-    eval $(yq '.["'$1'"].env // ""' ~/.config/prenv.yaml \
+    eval $(yq '.["'${on_project}'"].env // ""' ~/.config/prenv.yaml \
            |grep -v '^$' \
            |sed 's/^/export /; s/: /=/')
 
     # trigger on hook
-    eval "$(yq -r '.["'$1'"].hooks.on // ""' ~/.config/prenv.yaml)"
+    eval "$(yq -r '.["'${on_project}'"].hooks.on // ""' ~/.config/prenv.yaml)"
 
-    if [[ ${_PRENV[(Ie)$1]} -eq 0 ]]; then
-        _PRENV+=("$1")
+    # add project to _PRENV if not already in the list
+    if [[ ${_PRENV[(Ie)${on_project}]} -eq 0 ]]; then
+        _PRENV+=("${on_project}")
     fi
 }
 
 function _prenv-off() {
-    local project
-    local projects=$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)
-    if [[ -n "$1" ]]; then
+    local project off_project
+    off_project="${1}"
+    if [[ -n "${off_project}" ]]; then
+        # check if project is active
+        if [[ ${_PRENV[(Ie)${off_project}]} -eq 0 ]]; then
+            echo "$off_project not active. Cannot deactivate" >&2
+            return 1
+        fi
+
+        local -a projects=("${(@f)$(yq -r '. // {} |keys |.[]' ~/.config/prenv.yaml)}")
+
         # check if project if defined in configuration
-        if [[ ${projects[(Ie)$project]} -eq 0 ]]; then
-            echo "$project not in config"
+        if [[ ${projects[(Ie)${off_project}]} -eq 0 ]]; then
+            echo "$off_project not in config. "\
+                "$off_project will be removed from list of active projects" >&2
             # trying to remove the project in case it is active
-            _PRENV=(${(@)_PRENV:#${1}})
+            _PRENV=(${(@)_PRENV:#${off_project}})
             return 1
         fi
 
         # unset environment variables
         local env_keys
-        env_keys="$(yq -r '.["'$1'"].env // {} |keys |.[]' ~/.config/prenv.yaml)"
+        env_keys="$(yq -r '.["'${off_project}'"].env // {} |keys |.[]' ~/.config/prenv.yaml)"
         if [[ -n "$env_keys" ]]; then
             unset $(xargs <<<"$env_keys")
         fi
 
         # trigger off hook
-        eval "$(yq -r '.["'$1'"].hooks.off // ""' ~/.config/prenv.yaml)"
+        eval "$(yq -r '.["'${off_project}'"].hooks.off // ""' ~/.config/prenv.yaml)"
 
-        _PRENV=(${(@)_PRENV:#${1}})
+        _PRENV=(${(@)_PRENV:#${off_project}})
 
     elif [[ ${#_PRENV[@]} -gt 0 ]]; then
-        # off all projects
-        for project in ${(@)_PRENV}; do
+        # deactivate all projects in reverse order
+        for project in ${(@Oa)_PRENV}; do
             _prenv-off "$project"
         done
 
@@ -195,7 +208,7 @@ function _prenv-clear() {
         # trigger clear hooks
         eval "$(yq -r '.["'$project'"].hooks.clear // ""' ~/.config/prenv.yaml)"
 
-        _PRENV=(${(@)_PRENV:#${1}})
+        _PRENV=(${(@)_PRENV:#${project}})
     done
 
     # clear _PRENV in case the is a project that is not in the configuration
