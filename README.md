@@ -71,7 +71,9 @@ customer2:
   env:
     AWS_PROFILE: customer2
     KUBECONFIG: ~/.config/kubeconfig/customer2
-    HISTFILE: ~/.config/zsh/history/customer2
+  hooks:
+    on: fc -p ~/.config/zsh/history/customer2  # switch to other histfile
+    off: fc -P  # switch back to previous histfile
 ```
 
 ### Commands
