@@ -3,7 +3,7 @@
 # modify the environment
 typeset -ga _PRENV=()
 typeset -g _PRENV_SCRIPT="$0"
-typeset -g VERSION=1.1.0
+typeset -g VERSION=1.2.0
 
 
 function prenv() {
@@ -22,6 +22,7 @@ function prenv() {
             ;;
         show)  _prenv-list -vf ;;
         clear) _prenv-clear ;;
+        edit) _prenv-edit ;;
         help|-h|--help)
                _prenv-help ;;
         *)     _prenv-help; return 1 ;;
@@ -48,6 +49,8 @@ COMMANDS:
         # omitting PROJECT will do it for currently active project(s)
     clear
         # unset any environment variable defined in the config, run clear hooks
+    edit
+        # edit config with ${EDITOR:-editor}
     show
         # same as \`prenv list -v -f\`
     help
@@ -213,4 +216,13 @@ function _prenv-clear() {
 
     # clear _PRENV in case the is a project that is not in the configuration
     typeset -ga _PRENV=()
+}
+
+_prenv-edit() {
+    for possible_editor in "${EDITOR:-editor}" vim vi nano; do
+        if command -v "${possible_editor}" >/dev/null; then
+            ${possible_editor} ~/.config/prenv.yaml
+            return
+        fi
+    done
 }

@@ -8,6 +8,7 @@ function _prenv() {
         'off:Deactivate project'
         'show:Show details about active project(s)'
         'clear:Clear all projects'
+        "edit:Edit config with ${EDITOR:-editor}"
         'help:Show help'
     )
 

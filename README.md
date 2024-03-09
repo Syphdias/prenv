@@ -91,8 +91,9 @@ with the following COMMANDS:
   will deactivate the active projects.
 - `clear` to unset any envrionment variables mentioned in the configuration and
   trigger the clear hooks.
-- `show` to show curretly active project(s)
-- `help` to show all options of subcommands
+- `show` to show curretly active project(s).
+- `edit` to edit config file.
+- `help` to show all options of subcommands.
    
 ## Know Issues
 - Possibly this README and help command. Please give feedback!
