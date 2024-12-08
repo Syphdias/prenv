@@ -3,8 +3,7 @@
 # modify the environment
 typeset -ga _PRENV=()
 typeset -g _PRENV_SCRIPT="$0"
-typeset -g VERSION=1.2.0
-
+typeset -g VERSION=1.2.1
 
 function prenv() {
     case "$1" in
@@ -22,6 +21,7 @@ function prenv() {
             ;;
         show)  _prenv-list -vf ;;
         clear) _prenv-clear ;;
+        cat) _prenv-cat ;;
         edit) _prenv-edit ;;
         help|-h|--help)
                _prenv-help ;;
@@ -49,6 +49,8 @@ COMMANDS:
         # omitting PROJECT will do it for currently active project(s)
     clear
         # unset any environment variable defined in the config, run clear hooks
+    cat
+        # print config to stdout
     edit
         # edit config with ${EDITOR:-editor}
     show
@@ -216,6 +218,10 @@ function _prenv-clear() {
 
     # clear _PRENV in case the is a project that is not in the configuration
     typeset -ga _PRENV=()
+}
+
+_prenv-cat() {
+    cat ~/.config/prenv.yaml
 }
 
 _prenv-edit() {
