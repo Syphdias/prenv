@@ -3,10 +3,12 @@
 # modify the environment
 typeset -ga _PRENV=()
 typeset -g _PRENV_SCRIPT="$0"
-typeset -g VERSION=1.2.1
+typeset -g VERSION=1.2.2
 
 function prenv() {
     case "$1" in
+        help|-h|--help)
+               _prenv-help ;;
         list)
             shift
             _prenv-list $*
@@ -23,8 +25,6 @@ function prenv() {
         clear) _prenv-clear ;;
         cat) _prenv-cat ;;
         edit) _prenv-edit ;;
-        help|-h|--help)
-               _prenv-help ;;
         *)     _prenv-help; return 1 ;;
     esac
 }
