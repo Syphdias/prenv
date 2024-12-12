@@ -41,10 +41,11 @@ COMMANDS:
         #    ** variable is set and has the same value as in config
         # -f to filter for active project(s)
     on [-p] [PROJECT]   # activate a project
-        # run \`prenv off\` for active project(s), set environment variables, trigger on hook(s)
+        # run \`prenv off\` for active project(s), set environment variables,
+        # cd to \`.directory\` trigger on hook(s)
         # -p will persist active project(s) and not run \`prenv off\` for active project(s)
-        # omitting project will set environment variable of active project(s) and trigger on hook(s)
-        # when \`project.directory\` is set, change directory
+        # omitting project will set environment variable of active project(s),
+        # cd to \`.directory\` and trigger on hook(s)
     off [PROJECT]       # deactivate project(s)
         # unset environment variables, trigger off hook(s)
         # omitting PROJECT will do it for currently active project(s)
@@ -146,15 +147,15 @@ function _prenv-on() {
            |grep -v '^$' \
            |sed 's/^/export /; s/: /=/')
 
-    # trigger on hook
-    eval "$(yq -r '.["'${on_project}'"].hooks.on // ""' ~/.config/prenv.yaml)"
-
     # cd into directory unless we are in a subdirectory
     local cd_dir="$(yq -r '.["'${on_project}'"].directory // ""' ~/.config/prenv.yaml)"
     if [[ -n ${~cd_dir}  &&  "$PWD" != ${~cd_dir}* ]]; then
         # quoting the following will break it
         cd ${~cd_dir}
     fi
+
+    # trigger on hook
+    eval "$(yq -r '.["'${on_project}'"].hooks.on // ""' ~/.config/prenv.yaml)"
 
     # add project to _PRENV if not already in the list
     if [[ ${_PRENV[(Ie)${on_project}]} -eq 0 ]]; then

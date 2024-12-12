@@ -85,16 +85,16 @@ customer2:
 There are a few subcommds to `prenv` to use it in the form of `prenv COMMAND`
 with the following COMMANDS:
 - `list` to list all projects
-- `on [PROJECT]` to activate a project. This means to set all environement
-  variables and trigger the on hook. To ensure a clean environement the current
-  project will be deactivated (see `off` command).If you provide `-p` the
-  current project will not be deactivated — note that this might lead to
-  unexpected behaviour. Omitting the project will reactivate the current
-  project(s).
+- `on [PROJECT]` to activate a project. This means to set all environment
+  variables, cd to `PROJECT.directory` and trigger the on hook. To ensure a
+  clean environment the current project will be deactivated (see `off` command).If
+  you provide `-p` the current project will not be deactivated — note that this
+  might lead to unexpected behaviour. Omitting the project will reactivate the
+  current project(s).
 - `off [PROJECT]` to deactivate a project. This unsets all environment variables
   of the activated project(s) and trigger the off hook(s). Omitting the project
   will deactivate the active projects.
-- `clear` to unset any envrionment variables mentioned in the configuration and
+- `clear` to unset any environment variables mentioned in the configuration and
   trigger the clear hooks.
 - `show` to show curretly active project(s).
 - `cat` to print config file.
