@@ -44,6 +44,9 @@ In `hooks` you can define commands to be run on certain `prenv COMMAND`s: `on`, 
 example you can define `PROJECT.hooks.on` to run commands that will be run on
 project activation.
 
+With `directory` you can define `PROJECT.directory` to automatically change
+directory, unless you are already in a subdirectory of the specified directory.
+
 #### Example `~/.config/prenv.yaml`
 ```yaml
 private:
@@ -64,6 +67,7 @@ customer1:
   env:
     AWS_PROFILE: customer1
     KUBECONFIG: ~/.config/kubeconfig/customer1"
+  directory: ~/git/cutomer1
   hooks:    # Run script/program on activation
     on: "/usr/bin/xrandr"
 
@@ -71,6 +75,7 @@ customer2:
   env:
     AWS_PROFILE: customer2
     KUBECONFIG: ~/.config/kubeconfig/customer2
+  directory: "~/git/demo"
   hooks:
     on: fc -p ~/.config/zsh/history/customer2  # switch to other histfile
     off: fc -P  # switch back to previous histfile
@@ -92,6 +97,7 @@ with the following COMMANDS:
 - `clear` to unset any envrionment variables mentioned in the configuration and
   trigger the clear hooks.
 - `show` to show curretly active project(s).
+- `cat` to print config file.
 - `edit` to edit config file.
 - `help` to show all options of subcommands.
    
